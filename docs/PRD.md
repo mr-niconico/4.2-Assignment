@@ -13,7 +13,7 @@ Help the credit officer **find and fix GR blockers early**, so that invoices bec
 
 ## Core user flow
 1. Upload an **invoice register (CSV)**.
-2. See a dashboard of **payment readiness**, the **blocked 60+ invoices** and the **courier-delivered invoices with no GR**.
+2. See a dashboard of **payment readiness**, the **blocked 60+ invoices** and the **early warnings** (invoices with no verified GR 7 days after delivery).
 3. Open an invoice and upload its **GR document** (paper scan/photo or e-acknowledgement screenshot).
 4. The AI returns a **verdict** with reasons and a **draft follow-up message**.
 
@@ -21,9 +21,9 @@ Help the credit officer **find and fix GR blockers early**, so that invoices bec
 | # | Feature | Logic |
 |---|---|---|
 | F1 | CSV upload + validation (invoice no., customer, PO no., PO-named recipient, DR no., due date, amount, delivery mode, GR/POD/dispute status) | Code |
-| F2 | Readiness dashboard: days overdue, 3-condition check, blocked 60+ list grouped by blocker, **early warning for any invoice with no verified GR 7 days after delivery** (courier deliveries ranked first) | Code |
-| F3 | **AI GR verification:** extract signer name, date, DR/PO reference, stamp presence and acknowledgement type → compare with the PO-named recipient → **Valid / Invalid / Needs review** + reasons | **AI (vision)** |
-| F4 | **AI follow-up draft:** message to the right party (customer receiving, courier or internal sales) based on the blocker | **AI (text)** |
+| F2 | Readiness dashboard: days overdue, 3-condition check, blocked 60+ list grouped by blocker, **early warning for any invoice with no verified GR 7 days after delivery** (ranked by amount, then age) | Code |
+| F3 | **AI GR verification** (paper with or without stamp, e-acknowledgement screenshot, or QR-code GR): extract signer name, date, DR/PO reference, QR content and acknowledgement type → compare with the PO-named recipient → **Valid / Invalid / Needs review** + reasons | **AI (vision)** |
+| F4 | **AI follow-up draft:** message from the credit team to the right party (logistics, customer receiving, sales or customer AP) based on the blocker | **AI (text)** |
 
 ## Out of scope (v1)
 ERP/accounting integration · real customer data · reading PO PDFs automatically · bulk verification of many documents at once · payment processing · user accounts (optional)

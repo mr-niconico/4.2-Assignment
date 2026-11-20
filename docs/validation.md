@@ -86,7 +86,7 @@ The low entry price is deliberate: it lowers the barrier for small credit teams,
 
 - **Why me:** 20 years in finance, with first-hand knowledge of the GR/POD/dispute rules, the order-to-cash impact and how credit teams actually work. I know what a valid GR looks like and what AP rejects.
 - **Why now:** affordable **vision-capable AI models** can now read stamped paper scans, handwriting and system screenshots well enough to automate a check that used to need a person to look at every document.
-- **Product edge: "Fix eligibility before you chase payment."** Detection moves from *after overdue* to *within 7 days of delivery*, with courier deliveries prioritised and each blocker routed to the right party (customer, courier or internal sales).
+- **Product edge: "Fix eligibility before you chase payment."** Detection moves from *after overdue* to *within 7 days of delivery*, ranked by amount, with each blocker turned into a follow-up the credit team can send to the right party (logistics, customer receiving, sales or customer AP). Handles all three GR formats: paper (stamp optional), electronic acknowledgement and QR code.
 - **Low friction:** no ERP integration for the MVP, just a CSV upload and document upload.
 
 ## 6. Design a Cheap Test
@@ -109,7 +109,7 @@ All tests use **dummy data and fake GR images only**.
 | The PO-named person isn't always the authorised signer | Medium | Treated as a working rule (seller's advice); the user can **override the recipient name**; record exceptions per customer (v2) |
 | AI says "Valid" but AP still rejects (false confidence) | Medium | Frame the output as **decision support**, not approval; log AP outcomes to improve rules |
 | Data privacy: GRs contain names and signatures | Medium | MVP uses dummy data only; no documents stored after the check; production would need privacy-law compliance and consent |
-| Adoption: officers won't upload documents one by one | Medium | Prioritise by risk (courier + high value first); v2 bulk upload and email/ERP integration |
+| Adoption: officers won't upload documents one by one | Medium | Prioritise by risk (highest value and oldest first); v2 bulk upload and email/ERP integration |
 | E-acknowledgements live inside customer portals the supplier can't access | Low–Med | Accept screenshots or PDFs exported or emailed by the customer |
 
 **Verdict:** no fatal flaw found. The biggest risk (AI accuracy) is cheap to test first with T1, before building the full app.
