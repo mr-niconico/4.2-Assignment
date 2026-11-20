@@ -155,3 +155,14 @@ vite.config.ts.timestamp-*
 .nx/cache
 .nx/workspace-data
 .nx/migrate-runs
+
+# Next.js / Vercel (added when scaffolding the app)
+/.next/
+/out/
+/build
+.DS_Store
+*.pem
+.pnpm-debug.log*
+.pnp
+.vercel
+next-env.d.ts
