@@ -3,7 +3,7 @@
 
 Project: GR Check, an AI web app that helps Philippine credit officers find invoices blocked by a missing or invalid Goods Receipt (GR), verify GR documents (paper with or without stamp, e-acknowledgement screenshot, QR code) and draft follow-ups for the credit team.
 
-Source of truth: spec.md (v2). Background docs in /docs. Ask before deviating from the spec.
+Source of truth: spec.md (v2.1). Background docs in /docs. Ask before deviating from the spec.
 
 User: finance professional, not a developer. Explain changes in plain English. Ask before adding packages or deleting files.
 

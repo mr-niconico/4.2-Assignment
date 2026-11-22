@@ -1,6 +1,6 @@
 # Architecture Notes – GR Check
 
-**Author:** Nicolo Ruiz · **Status:** v2 (aligned with spec v2) · Related: [PRD](PRD.md), [spec](../spec.md)
+**Author:** Nicolo Ruiz · **Status:** v2.1 (aligned with spec v2.1) · Related: [PRD](PRD.md), [spec](../spec.md)
 
 ## 1. Overview
 
@@ -34,6 +34,7 @@ flowchart LR
 | QR decoder | Detect and decode a QR code in the uploaded GR image before the AI call (vision models can't reliably read QR codes) | `jsQR` in the browser |
 | Readiness engine | Days overdue, aging buckets, 3-condition check, blockers, early-warning priority | Pure TypeScript functions in `lib/readiness.ts` (unit-tested) |
 | `/api/verify-gr` | Validate the upload, send image + context to the vision model, return a structured verdict | Next.js route handler + Vercel AI SDK (`generateObject`) + OpenRouter provider |
+| Verdict guards | After every AI answer: **received-date validation runs in code** (on or after delivery, not after today; the AI only reads the date), then the low-confidence, consistency and QR guards from spec section 6 | Pure TypeScript functions in `lib/grGuards.ts` (unit-tested) |
 | `/api/draft-followup` | Generate a follow-up message for the right party | Next.js route handler + Vercel AI SDK |
 | AI provider | Access to LLMs with one key | OpenRouter (school-provided key) |
 | Monitoring | Page views and basic usage | Vercel Analytics; server logs for errors (no document content logged) |

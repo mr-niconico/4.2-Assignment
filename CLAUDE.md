@@ -3,7 +3,7 @@
 ## Project
 **GR Check**: a web app that helps credit officers at Philippine B2B suppliers find invoices blocked from payment by a missing or invalid Goods Receipt (GR), verify GR documents with AI, and draft follow-ups for the credit team.
 
-**Source of truth:** `spec.md` (v2). Background: `docs/PRD.md`, `docs/architecture.md`, `docs/validation.md`.
+**Source of truth:** `spec.md` (v2.1). Background: `docs/PRD.md`, `docs/architecture.md`, `docs/validation.md`.
 If a request conflicts with `spec.md`, stop and ask before changing behaviour. Never silently change the spec.
 
 ## About the user
