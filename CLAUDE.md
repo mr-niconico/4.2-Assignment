@@ -32,7 +32,7 @@ The project owner is a finance professional (20 years in credit and finance), **
 - `components/`: UI components
 - `lib/`: `csv.ts`, `readiness.ts`, `dates.ts` (date maths), `grGuards.ts` (GR verdict guards incl. date check), `sampleData.ts`, `schemas.ts`, `ai.ts`, `rateLimit.ts`
 - `public/sample/`: `invoice-template.csv` (headers only) and dummy GR images in `gr/`
-- Sample invoices are **generated in code** (`lib/sampleData.ts`) with dates relative to today, so the demo always shows early warnings and 60+ items. There is **no static `invoices.csv`**.
+- Sample invoices are **generated in code** (`lib/sampleData.ts`) with dates relative to today, so the demo always shows early warnings and 60+ items. Exception: the Valda Corp. invoice (SI-2026-00123) keeps fixed dates (2026-11-21, due 2026-12-21) to match the test GR photo. There is **no static `invoices.csv`**.
 - `tests/`: Vitest tests
 - `docs/`: planning documents (do not edit unless asked)
 

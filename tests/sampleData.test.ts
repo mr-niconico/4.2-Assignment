@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { invoicesToCsv, parseInvoiceCsv } from "../lib/csv";
+import { checkReceivedDate } from "../lib/grGuards";
 import { AGING_BUCKETS, dashboardKpis, earlyWarningList, evaluateInvoice } from "../lib/readiness";
 import { generateSampleInvoices, SAMPLE_CUSTOMERS } from "../lib/sampleData";
 
@@ -47,7 +48,7 @@ describe.each(TODAYS)("sample data generated on %s", (today) => {
     expect(kpis.blocked_60_plus_count).toBeGreaterThanOrEqual(10);
   });
 
-  it("includes the invoice for the test GR photo as an early warning whose GR date is valid", () => {
+  it("includes the invoice for the test GR photo on the photo's fixed dates", () => {
     const valda = evaluated.find((e) => e.invoice_no === "SI-2026-00123");
     expect(valda).toMatchObject({
       customer_name: "Valda Corp.",
@@ -56,10 +57,35 @@ describe.each(TODAYS)("sample data generated on %s", (today) => {
       po_recipient_name: "Manolito Bayle",
       amount_php: 86000,
       gr_status: "RECEIVED_UNVERIFIED",
-      early_warning: true,
+      invoice_date: "2026-11-21",
+      delivery_date: "2026-11-21",
+      due_date: "2026-12-21",
     });
-    // The photo's received date (2026-11-21) must be on or after the delivery date.
-    expect(valda!.delivery_date <= "2026-11-21").toBe(true);
-    expect(earlyWarningList(invoices, today).some((e) => e.invoice_no === "SI-2026-00123")).toBe(true);
+  });
+});
+
+describe("Valda Corp. invoice vs the test GR photo (received 2026-11-21)", () => {
+  const valda = generateSampleInvoices("2026-11-22").find((i) => i.invoice_no === "SI-2026-00123")!;
+  const PHOTO_RECEIVED = "2026-11-21";
+
+  it.each(["2026-11-21", "2026-11-22", "2026-11-29", "2027-01-15", "2027-12-31", "2030-06-30"])(
+    "the photo's received date is valid when checked on %s",
+    (today) => {
+      // Fixed dates: the same invoice whichever day sample data is loaded.
+      expect(generateSampleInvoices(today).find((i) => i.invoice_no === "SI-2026-00123")).toEqual(valda);
+      expect(checkReceivedDate(PHOTO_RECEIVED, valda.delivery_date, today).value).toBe("YES");
+    },
+  );
+
+  it("would be in the future if checked before 2026-11-21", () => {
+    expect(checkReceivedDate(PHOTO_RECEIVED, valda.delivery_date, "2026-11-20").value).toBe("NO");
+  });
+
+  it("is an early warning from 8 days after delivery until 60 days overdue", () => {
+    const ew = (today: string) => earlyWarningList(generateSampleInvoices(today), today).some((e) => e.invoice_no === "SI-2026-00123");
+    expect(ew("2026-11-28")).toBe(false); // 7 days after delivery
+    expect(ew("2026-11-29")).toBe(true); // 8 days
+    expect(ew("2027-02-19")).toBe(true); // 60 days overdue
+    expect(ew("2027-02-20")).toBe(false); // 61 days overdue → blocked 60+
   });
 });

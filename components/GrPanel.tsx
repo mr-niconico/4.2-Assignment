@@ -2,7 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import { AgingBadge, BlockerBadges, GrBadge, PodBadge } from "@/components/Badges";
+import { GrCheck } from "@/components/GrCheck";
 import { formatDate, formatPhp } from "@/lib/format";
+import type { GuardedResult } from "@/lib/grGuards";
 import type { EvaluatedInvoice } from "@/lib/readiness";
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
@@ -14,8 +16,15 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   );
 }
 
-/** Side panel for one invoice (spec 5.3). The AI GR check is added in the next step. */
-export function GrPanel({ invoice, onClose }: { invoice: EvaluatedInvoice; onClose: () => void }) {
+type Props = {
+  invoice: EvaluatedInvoice;
+  savedResult: GuardedResult | null;
+  onResult: (result: GuardedResult) => void;
+  onClose: () => void;
+};
+
+/** Side panel for one invoice (spec 5.3): invoice summary, status and the AI GR check. */
+export function GrPanel({ invoice, savedResult, onResult, onClose }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -98,16 +107,27 @@ export function GrPanel({ invoice, onClose }: { invoice: EvaluatedInvoice; onClo
             )}
           </section>
 
-          <section
-            aria-labelledby="ai-heading"
-            className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-4 py-4"
-          >
+          <section aria-labelledby="ai-heading" className="border-t border-slate-200 pt-4">
             <h3 id="ai-heading" className="text-sm font-semibold text-slate-900">
               Verify GR document
             </h3>
             <p className="mt-1 text-sm text-slate-600">
-              Uploading a GR image for the AI check will be available here in the next step.
+              Upload a photo or screenshot of the signed delivery receipt, e-acknowledgement or QR-code GR.
             </p>
+            <div className="mt-3">
+              <GrCheck
+                context={{
+                  invoice_no: invoice.invoice_no,
+                  customer_name: invoice.customer_name,
+                  po_no: invoice.po_no,
+                  dr_no: invoice.dr_no,
+                  po_recipient_name: invoice.po_recipient_name,
+                  delivery_date: invoice.delivery_date,
+                }}
+                savedResult={savedResult}
+                onResult={onResult}
+              />
+            </div>
           </section>
         </div>
       </aside>

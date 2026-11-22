@@ -9,6 +9,8 @@ import { UploadPanel, type LoadInfo } from "@/components/UploadPanel";
 import { filterByAmount, isAmountFilterActive, NO_AMOUNT_FILTER, type AmountFilter } from "@/lib/amountFilter";
 import { checkCsvFile, parseInvoiceCsv, type RowError } from "@/lib/csv";
 import { todayInManila } from "@/lib/dates";
+import type { GuardedResult } from "@/lib/grGuards";
+import { grStatusAfterVerdict } from "@/lib/grStatus";
 import { formatCount, formatDate } from "@/lib/format";
 import { dashboardKpis, evaluateInvoice, type EvaluatedInvoice, type Invoice } from "@/lib/readiness";
 import { generateSampleInvoices } from "@/lib/sampleData";
@@ -26,6 +28,8 @@ export function Dashboard() {
   const [tab, setTab] = useState<TabId>("early");
   const [selectedNo, setSelectedNo] = useState<string | null>(null);
   const [amountFilter, setAmountFilter] = useState<AmountFilter>(NO_AMOUNT_FILTER);
+  // Last GR check result per invoice, for this session only.
+  const [grResults, setGrResults] = useState<Record<string, GuardedResult>>({});
 
   const evaluated = useMemo(
     () => (today ? invoices.map((inv) => evaluateInvoice(inv, today)) : []),
@@ -46,7 +50,18 @@ export function Dashboard() {
     setInfo({ source, loaded: list.length, skipped, asOf: formatDate(now) });
     setTab("early");
     setSelectedNo(null);
+    setGrResults({});
   }
+
+  /** A GR verdict updates that invoice's GR status for this session; every figure then recalculates. */
+  const recordGrResult = useCallback((invoiceNo: string, result: GuardedResult) => {
+    setGrResults((prev) => ({ ...prev, [invoiceNo]: result }));
+    setInvoices((prev) =>
+      prev.map((inv) =>
+        inv.invoice_no === invoiceNo ? { ...inv, gr_status: grStatusAfterVerdict(result.verdict) } : inv,
+      ),
+    );
+  }, []);
 
   function loadSample() {
     show(generateSampleInvoices(todayInManila()), "Sample data (fictional)", 0, []);
@@ -164,7 +179,15 @@ export function Dashboard() {
         </p>
       )}
 
-      {selected && <GrPanel invoice={selected} onClose={closePanel} />}
+      {selected && (
+        <GrPanel
+          key={selected.invoice_no}
+          invoice={selected}
+          savedResult={grResults[selected.invoice_no] ?? null}
+          onResult={(result) => recordGrResult(selected.invoice_no, result)}
+          onClose={closePanel}
+        />
+      )}
     </div>
   );
 }

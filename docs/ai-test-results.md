@@ -40,10 +40,27 @@ All images and names are **dummy data** (fictional delivery note, ACE Internatio
 | 11 | 2026-11-22 | gr-01 (v3) | A | VALID | 🟢 VALID | HIGH | `google/gemini-3.8-flash` | 2,325 / 682 (509 thinking) | $0.0047 (₱0.27) | Correct. **Spec v2.1:** date checked in code (`lib/grGuards.ts`), AI only reads the date. |
 | 12 | 2026-11-22 | gr-01 (v3) | B | INVALID | 🔴 INVALID | HIGH | `google/gemini-3.8-flash` | 2,322 / 717 (550 thinking) | $0.0049 (₱0.28) | Correct, spec v2.1. |
 
+### Web app: `POST /api/verify-gr` and the Check GR panel (2026-11-22)
+
+From here the checks run through the web app's server route, which uses the same shared code as the script (`lib/ai.ts`, `lib/schemas.ts`, `lib/grGuards.ts`). Runs #13–#19 were sent directly to the route on the local dev server; the route does not return token usage, so cost is the estimate from runs #9–#12 (≈ $0.005 per check). Context A here used the sample invoice's delivery date at the time, `2026-11-14`.
+
+| # | Date (Manila) | Image | Context | Expected | Actual (final) | Confidence | Model | Time | Cost per check | Notes |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 13 | 2026-11-22 | gr-01 (v3) | A (delivery 2026-11-14) | VALID | 🟡 NEEDS_REVIEW | LOW | `google/gemini-3.8-flash` | 50 s | ≈ $0.03 (2 cut-off replies) | **Bug found:** both attempts ended with `finishReason=length`: the model's "thinking" used up the 4,000-token answer limit, the JSON was cut off, and the guard returned "Could not read the AI response." |
+| 14 | 2026-11-22 | gr-01 (v3) | A (delivery 2026-11-14) | VALID | 🟡 NEEDS_REVIEW | LOW | `google/gemini-3.8-flash` | 48 s | ≈ $0.03 | Same cause, confirmed with a safe server log (reason only, no content). |
+| 15 | 2026-11-22 | gr-01 (v3) | A (delivery 2026-11-14) | VALID | 🟢 VALID | – | `google/gemini-3.8-flash` | 19 s | ≈ $0.005 | Worked this time: the long "thinking" happens only sometimes. |
+| 16 | 2026-11-22 | gr-01 (v3) | A (delivery 2026-11-14) | VALID | 🟢 VALID | HIGH | `google/gemini-3.8-flash` | 6 s | ≈ $0.005 | **Fix:** reasoning capped at 2,000 tokens (`MAX_REASONING_TOKENS` in `lib/ai.ts`), so half the limit is always left for the answer. |
+| 17 | 2026-11-22 | gr-01 (v3) | A (delivery 2026-11-14) | VALID | 🟢 VALID | HIGH | `google/gemini-3.8-flash` | 7 s | ≈ $0.005 | After the fix. |
+| 18 | 2026-11-22 | gr-01 (v3) | A (delivery 2026-11-14) | VALID | 🟢 VALID | HIGH | `google/gemini-3.8-flash` | 4 s | ≈ $0.005 | After the fix: 3 of 3 VALID, and faster. |
+| 19 | 2026-11-22 | gr-01 (v3) | B (Maria Santos) | INVALID | 🔴 INVALID | HIGH | `google/gemini-3.8-flash` | – | ≈ $0.005 | Correct, but the AI read the signer as "Manolito Bay**lon**": handwriting is not always read exactly (hence "confirm before acting"). |
+| 20 | 2026-11-22 | gr-01 (v3) | Sample invoice SI-2026-00123 (fixed dates, delivery 2026-11-21) | VALID | ✅ passed | – | `google/gemini-3.8-flash` | – | ≈ $0.005 | **Owner's browser test:** uploaded in the Check GR panel (All invoices → search "valda"); result as expected, and the invoice became payment-ready on the dashboard. |
+| 21 | 2026-11-22 | – | – | – | ✅ passed | – | – | – | – | **Owner's browser tests:** all other checks of the GR panel passed (upload, preview, QR scan message, result card, status update). |
+
 ## Summary
 
 - **Verdicts:** all 9 checks that ran gave a final verdict that was correct for the document as photographed. Runs #1 and #3 returned NEEDS_REVIEW instead of the expected VALID because the photo's own dates conflicted; 3 checks (#5, #7, #8) did not run (no credits).
 - **Date judgement:** Claude Sonnet 5 misjudged a next-day date as "not in the future" (#6). Since spec v2.1 the date is validated in code, so this can no longer affect the verdict; the cases are covered by unit tests in `tests/grGuards.test.ts`.
 - **Cost:** about **$0.02–0.03 per check** with Claude Sonnet 5 versus **about $0.005 per check** with Gemini 3.8 Flash (roughly 4–5× cheaper, partly because the image uses fewer input tokens).
-- **"Thinking" models:** Gemini 3.8 Flash spends most of its output tokens on reasoning; answer limits must leave room for it (`check-gr.mjs` uses 4,000).
-- **Still to test:** the full 10-image manual set from spec section 10 (target ≥ 8/10 correct).
+- **"Thinking" models:** Gemini 3.8 Flash spends most of its output tokens on reasoning. Sometimes it "thinks" until the answer limit is used up and the answer is cut off (#13, #14). Since then reasoning is capped at 2,000 of the 4,000 output tokens (`lib/ai.ts`); all later checks succeeded, in 4–7 seconds instead of up to 25.
+- **Web app:** the Check GR panel and `/api/verify-gr` give the same verdicts as the script (same shared code). The owner confirmed the browser flow end to end (#20, #21).
+- **Still to test:** the full 10-image manual set from spec section 10 (target ≥ 8/10 correct), including a QR-code GR and an e-acknowledgement screenshot.

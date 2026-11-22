@@ -2,12 +2,13 @@
 // All customers, people and numbers are FICTIONAL (except the test GR's own fictional details: Valda Corp.).
 //
 // Dates are generated RELATIVE TO `today`, so the demo always shows early warnings, blocked 60+ items
-// and every aging bucket, whatever day it is opened.
+// and every aging bucket, whatever day it is opened. The one exception is the Valda Corp. invoice that
+// matches the test GR photo: it keeps the photo's fixed dates (see GR_PHOTO_INVOICE_DATES).
 // Each invoice is described by how many days overdue it is (negative = due in the future).
 // Terms are 30 days and goods are delivered on the invoice date, so:
 //   due_date = today − overdue · invoice_date = delivery_date = due_date − 30
 
-import { addDays, maxDate, minDate } from "./dates";
+import { addDays } from "./dates";
 import type { DisputeFlag, GrStatus, Invoice, PodStatus } from "./readiness";
 
 type SampleSpec = {
@@ -24,7 +25,13 @@ type SampleSpec = {
 const TERMS_DAYS = 30;
 
 // The invoice that matches the test GR photo (public/sample/gr/gr-01-valid-signed.jpg).
-const GR_PHOTO_DATE = "2026-11-21"; // delivery and received date on the photo
+// Its dates are FIXED to match the photo (printed delivery date and handwritten received date 2026-11-21),
+// unlike every other sample invoice, which is dated relative to today.
+export const GR_PHOTO_INVOICE_DATES = {
+  invoice_date: "2026-11-21",
+  delivery_date: "2026-11-21",
+  due_date: "2026-12-21",
+} as const;
 
 export const SAMPLE_CUSTOMERS = [
   "Valda Corp.",
@@ -118,21 +125,15 @@ function specToInvoice(spec: SampleSpec, index: number, today: string): Invoice 
   };
 }
 
-/**
- * The invoice that matches the test GR photo. Its delivery date is never after the photo's date
- * (so the photo's received date 2026-11-21 is valid) and always at least 8 days ago (so it is an early warning).
- */
-function grPhotoInvoice(today: string): Invoice {
-  const delivery = minDate(addDays(today, -8), GR_PHOTO_DATE);
+/** The invoice that matches the test GR photo, on the photo's fixed dates. */
+function grPhotoInvoice(): Invoice {
   return {
     invoice_no: "SI-2026-00123",
     customer_name: "Valda Corp.",
     po_no: "PO-2026-1192",
     po_recipient_name: "Manolito Bayle",
     dr_no: "DN-2026-0845",
-    invoice_date: delivery,
-    delivery_date: delivery,
-    due_date: maxDate(addDays(delivery, TERMS_DAYS), addDays(today, -15)), // at most 15 days overdue
+    ...GR_PHOTO_INVOICE_DATES,
     amount_php: 86000,
     gr_status: "RECEIVED_UNVERIFIED",
     pod_status: "RECEIVED",
@@ -143,5 +144,5 @@ function grPhotoInvoice(today: string): Invoice {
 
 /** 40 dummy invoices dated relative to `today` (YYYY-MM-DD). */
 export function generateSampleInvoices(today: string): Invoice[] {
-  return [grPhotoInvoice(today), ...SPECS.map((spec, i) => specToInvoice(spec, i, today))];
+  return [grPhotoInvoice(), ...SPECS.map((spec, i) => specToInvoice(spec, i, today))];
 }
