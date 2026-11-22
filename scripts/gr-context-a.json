@@ -1,0 +1,10 @@
+{
+  "label": "Test A – details match the GR (expect VALID)",
+  "invoice_no": "SI-2026-00123",
+  "customer_name": "Valda Corp.",
+  "po_no": "PO-2026-1192",
+  "dr_no": "DN-2026-0845",
+  "po_recipient_name": "Manolito Bayle",
+  "delivery_date": "2026-11-21",
+  "qr_text": null
+}
