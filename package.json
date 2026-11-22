@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run --passWithNoTests",
     "check:ai": "node --env-file=.env.local scripts/check-ai.mjs",
-    "check:gr": "node --env-file=.env.local scripts/check-gr.mjs"
+    "check:gr": "node --env-file=.env.local scripts/check-gr.mjs",
+    "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
     "@openrouter/ai-sdk-provider": "^3.1.0",
