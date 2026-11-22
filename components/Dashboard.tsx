@@ -11,6 +11,7 @@ import { checkCsvFile, parseInvoiceCsv, type RowError } from "@/lib/csv";
 import { todayInManila } from "@/lib/dates";
 import type { GuardedResult } from "@/lib/grGuards";
 import { grStatusAfterVerdict } from "@/lib/grStatus";
+import type { FollowupDraft } from "@/lib/schemas";
 import { formatCount, formatDate } from "@/lib/format";
 import { dashboardKpis, evaluateInvoice, type EvaluatedInvoice, type Invoice } from "@/lib/readiness";
 import { generateSampleInvoices } from "@/lib/sampleData";
@@ -30,6 +31,8 @@ export function Dashboard() {
   const [amountFilter, setAmountFilter] = useState<AmountFilter>(NO_AMOUNT_FILTER);
   // Last GR check result per invoice, for this session only.
   const [grResults, setGrResults] = useState<Record<string, GuardedResult>>({});
+  // Last follow-up draft per invoice, for this session only.
+  const [drafts, setDrafts] = useState<Record<string, FollowupDraft>>({});
 
   const evaluated = useMemo(
     () => (today ? invoices.map((inv) => evaluateInvoice(inv, today)) : []),
@@ -51,6 +54,7 @@ export function Dashboard() {
     setTab("early");
     setSelectedNo(null);
     setGrResults({});
+    setDrafts({});
   }
 
   /** A GR verdict updates that invoice's GR status for this session; every figure then recalculates. */
@@ -185,6 +189,8 @@ export function Dashboard() {
           invoice={selected}
           savedResult={grResults[selected.invoice_no] ?? null}
           onResult={(result) => recordGrResult(selected.invoice_no, result)}
+          savedDraft={drafts[selected.invoice_no] ?? null}
+          onDraft={(draft) => setDrafts((prev) => ({ ...prev, [selected.invoice_no]: draft }))}
           onClose={closePanel}
         />
       )}

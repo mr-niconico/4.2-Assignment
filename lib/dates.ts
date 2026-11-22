@@ -36,6 +36,32 @@ export function maxDate(a: string, b: string): string {
   return a > b ? a : b;
 }
 
+/**
+ * The date `days` working days after `date`, skipping Saturdays and Sundays.
+ * (Public holidays are not known to the app and are not skipped.)
+ */
+export function addWorkingDays(date: string, days: number): string {
+  let current = date;
+  let added = 0;
+  while (added < days) {
+    current = addDays(current, 1);
+    const weekday = new Date(toUtcMs(current)).getUTCDay(); // 0 = Sunday, 6 = Saturday
+    if (weekday !== 0 && weekday !== 6) added += 1;
+  }
+  return current;
+}
+
+/** 2026-11-26 → "Thursday, 26 November 2026" */
+export function formatLongDate(date: string): string {
+  const d = new Date(toUtcMs(date));
+  const weekday = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"][d.getUTCDay()];
+  const month = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December",
+  ][d.getUTCMonth()];
+  return `${weekday}, ${d.getUTCDate()} ${month} ${d.getUTCFullYear()}`;
+}
+
 /** Today's date in the Philippines (YYYY-MM-DD). Only the UI should call this; rules take `today` as a parameter. */
 export function todayInManila(now: Date = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Manila" }).format(now);

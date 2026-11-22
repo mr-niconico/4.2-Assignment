@@ -2,7 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import { AgingBadge, BlockerBadges, GrBadge, PodBadge } from "@/components/Badges";
+import { FollowupDraft } from "@/components/FollowupDraft";
 import { GrCheck } from "@/components/GrCheck";
+import type { FollowupDraft as Draft } from "@/lib/schemas";
 import { formatDate, formatPhp } from "@/lib/format";
 import type { GuardedResult } from "@/lib/grGuards";
 import type { EvaluatedInvoice } from "@/lib/readiness";
@@ -20,11 +22,13 @@ type Props = {
   invoice: EvaluatedInvoice;
   savedResult: GuardedResult | null;
   onResult: (result: GuardedResult) => void;
+  savedDraft: Draft | null;
+  onDraft: (draft: Draft) => void;
   onClose: () => void;
 };
 
-/** Side panel for one invoice (spec 5.3): invoice summary, status and the AI GR check. */
-export function GrPanel({ invoice, savedResult, onResult, onClose }: Props) {
+/** Side panel for one invoice (spec 5.3): invoice summary, status, the AI GR check and the follow-up draft. */
+export function GrPanel({ invoice, savedResult, onResult, savedDraft, onDraft, onClose }: Props) {
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -126,6 +130,21 @@ export function GrPanel({ invoice, savedResult, onResult, onClose }: Props) {
                 }}
                 savedResult={savedResult}
                 onResult={onResult}
+              />
+            </div>
+          </section>
+
+          <section aria-labelledby="followup-heading" className="border-t border-slate-200 pt-4">
+            <h3 id="followup-heading" className="text-sm font-semibold text-slate-900">
+              Follow-up
+            </h3>
+            <div className="mt-2">
+              <FollowupDraft
+                key={`${invoice.gr_status}-${invoice.pod_status}-${invoice.dispute_flag}`}
+                invoice={invoice}
+                grReasons={savedResult?.reasons ?? []}
+                savedDraft={savedDraft}
+                onDraft={onDraft}
               />
             </div>
           </section>

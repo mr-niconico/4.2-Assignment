@@ -1,6 +1,6 @@
 # spec.md – GR Check (v1)
 
-**Author:** Nicolo Ruiz · **Status:** v2.2 (amount filters and value-based sorting) · Related: [PRD](docs/PRD.md), [architecture](docs/architecture.md)
+**Author:** Nicolo Ruiz · **Status:** v2.3 ('verify first' rule for unverified GRs) · Related: [PRD](docs/PRD.md), [architecture](docs/architecture.md)
 
 ## Revision history
 | Version | Date | Changes |
@@ -9,6 +9,7 @@
 | v2 | 2026-11-20 | After domain-expert review: (1) removed `delivery_mode` column; early-warning priority is now amount, then days since delivery. (2) Stamp is **optional**; a **signature** (or equivalent acknowledgement) is required. (3) Added **QR-code GR** as a third document type, decoded in code before the AI check. (4) The **credit team owns every follow-up**; routing table updated |
 | v2.1 | 2026-11-22 | The **received-date check is done in code**, not by the AI: the AI only reads the date; code sets `date_valid` (on or after delivery date, not after today). Reason: in testing, a model called a next-day date "not in the future" (date maths belongs in code). |
 | v2.2 | 2026-11-22 | Added amount filters and value-based sorting after domain review (prioritise high-value invoices). |
+| v2.3 | 2026-11-22 | Added 'verify first' rule for unverified GRs. |
 
 ## 1. Purpose
 Help a credit officer find invoices that are **not payment-eligible** because of a missing or invalid Goods Receipt (GR), detect them **within 7 days of delivery**, verify GR documents with AI, and draft the right follow-up.
@@ -157,6 +158,7 @@ One row per invoice. The header names must match exactly (case-insensitive).
 | POD missing | Credit team | `INTERNAL_LOGISTICS` |
 | Dispute | Credit team | `INTERNAL_SALES` (account owner to help resolve) |
 | Payment-ready but overdue | Credit team | `CUSTOMER_AP` (payment follow-up) |
+| GR unverified (received, not yet checked; also after NEEDS_REVIEW) | Credit officer | **No draft (v2.3):** prompt the user to run **Check GR** first |
 
 **Response:** `{ "recipient_type": "...", "subject": "...", "body": "..." }`
 

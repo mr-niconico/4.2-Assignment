@@ -69,3 +69,43 @@ export function checkImageFile(file: { type: string; size: number }): string | n
 
 // ---------- API response ----------
 export type VerifyResponse = { ok: true; result: GuardedResult } | { ok: false; error: string };
+
+// ---------- follow-up draft (spec section 7) ----------
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+
+export const DraftRequestSchema = z.object({
+  invoice: z.object({
+    invoice_no: field(60),
+    customer_name: field(200),
+    po_no: field(60),
+    po_recipient_name: field(120),
+    dr_no: field(60),
+    delivery_date: isoDate,
+    due_date: isoDate,
+    amount_php: z.number().positive().max(1e12),
+    gr_status: z.enum(["NONE", "RECEIVED_UNVERIFIED", "VALID", "INVALID"]),
+    pod_status: z.enum(["NONE", "RECEIVED"]),
+    dispute_flag: z.enum(["Y", "N"]),
+    dispute_note: z.string().max(200).nullable(),
+  }),
+  // Reasons from the last GR check, if any (e.g. "Signed by R. Lim, but the PO names Maria Santos.").
+  gr_reasons: z.array(z.string().max(300)).max(6).default([]),
+});
+export type DraftRequest = z.infer<typeof DraftRequestSchema>;
+
+/** What the AI must return: only the text. The recipient is decided by code. */
+export const DraftTextSchema = z.object({
+  subject: z.string().min(1).max(200),
+  body: z.string().min(1).max(3000),
+});
+
+export type FollowupDraft = {
+  recipient_type: "INTERNAL_LOGISTICS" | "CUSTOMER_RECEIVING" | "INTERNAL_SALES" | "CUSTOMER_AP";
+  recipient_label: string;
+  situation_label: string;
+  target_date: string;
+  subject: string;
+  body: string;
+  word_count: number;
+};
+export type DraftResponse = { ok: true; draft: FollowupDraft } | { ok: false; error: string };
