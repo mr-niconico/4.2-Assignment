@@ -1,6 +1,6 @@
 # spec.md – GR Check (v1)
 
-**Author:** Nicolo Ruiz · **Status:** v2.1 (received-date check moved into code) · Related: [PRD](docs/PRD.md), [architecture](docs/architecture.md)
+**Author:** Nicolo Ruiz · **Status:** v2.2 (amount filters and value-based sorting) · Related: [PRD](docs/PRD.md), [architecture](docs/architecture.md)
 
 ## Revision history
 | Version | Date | Changes |
@@ -8,6 +8,7 @@
 | v1 | 2026-11-19 | First draft |
 | v2 | 2026-11-20 | After domain-expert review: (1) removed `delivery_mode` column; early-warning priority is now amount, then days since delivery. (2) Stamp is **optional**; a **signature** (or equivalent acknowledgement) is required. (3) Added **QR-code GR** as a third document type, decoded in code before the AI check. (4) The **credit team owns every follow-up**; routing table updated |
 | v2.1 | 2026-11-22 | The **received-date check is done in code**, not by the AI: the AI only reads the date; code sets `date_valid` (on or after delivery date, not after today). Reason: in testing, a model called a next-day date "not in the future" (date maths belongs in code). |
+| v2.2 | 2026-11-22 | Added amount filters and value-based sorting after domain review (prioritise high-value invoices). |
 
 ## 1. Purpose
 Help a credit officer find invoices that are **not payment-eligible** because of a missing or invalid Goods Receipt (GR), detect them **within 7 days of delivery**, verify GR documents with AI, and draft the right follow-up.
@@ -63,10 +64,16 @@ One row per invoice. The header names must match exactly (case-insensitive).
 - After a successful upload, the dashboard appears on the same page. Validation errors are shown in a collapsible list.
 
 ### 5.2 Dashboard
-- **KPI tiles:** Total AR (PHP) · % of AR payment-ready · Blocked 60+ (count and PHP) · Early warnings (count).
-- **Tab 1 – Early warning** (default): invoices matching R7, sorted by R8. Columns: rank, customer, invoice no., amount, days since delivery, GR status, action button **Check GR**.
-- **Tab 2 – Blocked 60+:** invoices matching R6, grouped by main blocker (GR first, then POD, then dispute). Shows the subtotal per group.
-- **Tab 3 – All invoices:** searchable table with filters for blocker and aging bucket.
+- **KPI tiles:** Total AR (PHP) · % of AR payment-ready · Blocked 60+ (count and PHP) · Early warnings (count). The tiles always show the whole register (they ignore the amount filter).
+- **Amount filter (v2.2)**, above the tabs and applied to all three tabs and their counts:
+  - Preset buttons: **All · ≥ ₱500,000 · ₱100,000–499,999 · ₱50,000–99,999 · < ₱50,000**. Upper limits are exclusive, so every amount (including centavos) falls in exactly one preset: ₱49,999.99 → < ₱50,000; ₱50,000 → ₱50,000–99,999; ₱499,999.99 → ₱100,000–499,999; ₱500,000 → ≥ ₱500,000.
+  - **Minimum amount** box for a custom threshold (accepts `250000`, `250,000` or `₱250,000`); combined with the preset (both must pass). Invalid input shows a message and is ignored.
+  - Logic lives in `lib/amountFilter.ts` as pure functions with unit tests.
+- **Summary above each table (v2.2):** "Showing X invoices totalling ₱Y" for the current filters, so the value at stake is visible.
+- **Sorting (v2.2):** clicking the **Amount** or **Days** column header sorts by that column (first click highest first, second click lowest first). Ties: higher amount, then invoice no.
+- **Tab 1 – Early warning** (default): invoices matching R7, sorted by R8 (amount, then days since delivery) by default; a link returns to this priority order after re-sorting. Columns: rank, customer, invoice no., amount, days since delivery, GR status, action button **Check GR**.
+- **Tab 2 – Blocked 60+:** invoices matching R6, grouped by main blocker (GR first, then POD, then dispute), **sorted by amount (highest first) within each group** by default. Shows the subtotal per group.
+- **Tab 3 – All invoices:** searchable table with filters for blocker and aging bucket, **sorted by amount (highest first)** by default.
 
 ### 5.3 GR check panel (opens beside the table)
 - Invoice summary: customer, invoice / PO / DR numbers, PO-named recipient, delivery date, amount.
