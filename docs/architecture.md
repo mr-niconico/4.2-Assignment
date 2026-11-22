@@ -73,7 +73,7 @@ flowchart LR
 | Name | Example | Where |
 |---|---|---|
 | `OPENROUTER_API_KEY` | `sk-or-...` | `.env.local` + Vercel (secret) |
-| `OPENROUTER_MODEL` | a vision-capable model ID, e.g. a Claude Sonnet model (confirmed in Phase 3) | `.env.local` + Vercel |
+| `OPENROUTER_MODEL` | a vision-capable model ID; confirmed in Phase 3: `google/gemini-3.8-flash` | `.env.local` + Vercel |
 
 A committed `.env.example` lists these names with **empty values**.
 

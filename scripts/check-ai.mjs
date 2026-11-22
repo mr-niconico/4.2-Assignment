@@ -29,9 +29,10 @@ try {
   const result = await generateText({
     model: openrouter.chat(modelId),
     prompt: "Reply with exactly: GR Check connection OK",
-    // Keep the answer tiny. Without a limit, OpenRouter reserves credit for the
+    // Keep the answer small. Without a limit, OpenRouter reserves credit for the
     // model's maximum answer length (65k tokens) and may refuse with HTTP 402.
-    maxOutputTokens: 50,
+    // Leave room for "thinking" models, whose reasoning also counts as output.
+    maxOutputTokens: 500,
     maxRetries: 1,
     abortSignal: AbortSignal.timeout(30_000),
   });
