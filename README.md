@@ -4,6 +4,8 @@
 
 **Live demo:** https://gr-check-woad.vercel.app · click **Load sample data** (fictional invoices, no upload needed)
 
+**Demo video (2 min):** https://www.loom.com/share/41de8cf1c7e44276a9cabab34aad47af
+
 [![CI](https://github.com/mr-niconico/4.2-Assignment/actions/workflows/ci.yml/badge.svg)](https://github.com/mr-niconico/4.2-Assignment/actions/workflows/ci.yml)
 
 ![GR Check dashboard: KPI tiles, amount filter and the early-warning list ranked by amount](docs/screenshots/dashboard.png)
