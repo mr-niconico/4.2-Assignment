@@ -179,6 +179,7 @@ This project was built with AI coding assistants under written rules:
 | [docs/PRD.md](docs/PRD.md) | Product requirements: problem, user flow, MVP features, success metrics, risks |
 | [docs/architecture.md](docs/architecture.md) | Components, data flow, decisions, environment variables |
 | [docs/ai-test-results.md](docs/ai-test-results.md) | Log of all real AI test runs |
+| [docs/reflection.md](docs/reflection.md) | Project reflection: what worked, what went wrong, where finance expertise made the difference, next steps |
 
 **Spec revision history**
 
